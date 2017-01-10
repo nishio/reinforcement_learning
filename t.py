@@ -29,6 +29,15 @@ def policy_greedy(num_use, sum_reward):
     return np.argmax(sum_reward / num_use)
 
 
+def policy_builder_greedy(threshold):
+    def policy_greedy(num_use, sum_reward):
+        for i in range(num_actions):
+            if num_use[i] < threshold:
+                return i
+        return np.argmax(sum_reward / num_use)
+    return policy_greedy
+
+
 def ex1():
     for i in range(20):
         i_action = policy_greedy(num_use, sum_reward)
@@ -38,27 +47,39 @@ def ex1():
         num_use[i_action] += 1
         sum_reward[i_action] += reward
 
-NUM_SERIES = 1000
-NUM_ITERATION = 100
-choices = np.zeros((NUM_SERIES, NUM_ITERATION))
-rewards = np.zeros((NUM_SERIES, NUM_ITERATION))
-for j in range(NUM_SERIES):
-    num_use = np.zeros(num_actions)
-    sum_reward = np.zeros(num_actions)
-    for i in range(NUM_ITERATION):
-        i_action = policy_greedy(num_use, sum_reward)
-        action = actions[i_action]
-        reward = action()
-        #print action.__name__, reward
-        num_use[i_action] += 1
-        sum_reward[i_action] += reward
-        choices[j, i] = i_action
-        rewards[j, i] = reward
 
-x = np.sort(choices[:, -1])
-print x
-print sum(x == 0)
-print sum(x == 1)
-print sum(x == 2)
-print sum(x == 3)
+NUM_SERIES = 600
+NUM_ITERATION = 1000
+def ex2(name, policy):
+    choices = np.zeros((NUM_SERIES, NUM_ITERATION))
+    rewards = np.zeros((NUM_SERIES, NUM_ITERATION))
+    for j in range(NUM_SERIES):
+        num_use = np.zeros(num_actions)
+        sum_reward = np.zeros(num_actions)
+        for i in range(NUM_ITERATION):
+            i_action = policy(num_use, sum_reward)
+            action = actions[i_action]
+            reward = action()
+            #print action.__name__, reward
+            num_use[i_action] += 1
+            sum_reward[i_action] += reward
+            choices[j, i] = i_action
+            rewards[j, i] = reward
 
+
+    last = np.sort(choices[:, -1])
+    print name
+    print sum(last == 0)
+    print sum(last == 1)
+    print sum(last == 2)
+    print sum(last == 3)
+
+    # visualization
+    import matplotlib.pyplot as plt
+    choices.sort(axis=0)
+    plt.imshow(choices)
+    plt.savefig('{}.png'.format(name))
+
+ex2("greedy_1", policy_builder_greedy(1))
+ex2("greedy_3", policy_builder_greedy(3))
+ex2("greedy_10", policy_builder_greedy(10))
