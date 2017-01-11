@@ -38,6 +38,23 @@ def policy_builder_greedy(threshold):
     return policy_greedy
 
 
+def policy_builder_optimistic(num_offset, offset_weight=500):
+    def policy_optimistic(num_use, sum_reward):
+        return np.argmax(
+            (sum_reward + num_offset * offset_weight)
+            / (num_use + num_offset))
+    return policy_optimistic
+
+
+def policy_ucb1(num_use, sum_reward):
+    for i in range(num_actions):
+        if num_use[i] < 1:
+            return i
+    mu = sum_reward / num_use
+    ub = 500 * np.sqrt(np.log(num_use.sum()) * 2 / num_use)
+    return np.argmax(mu + ub)
+
+
 def ex1():
     for i in range(20):
         i_action = policy_greedy(num_use, sum_reward)
@@ -80,6 +97,13 @@ def ex2(name, policy):
     plt.imshow(choices)
     plt.savefig('{}.png'.format(name))
 
-ex2("greedy_1", policy_builder_greedy(1))
-ex2("greedy_3", policy_builder_greedy(3))
-ex2("greedy_10", policy_builder_greedy(10))
+#ex2("greedy_1", policy_builder_greedy(1))
+#ex2("greedy_3", policy_builder_greedy(3))
+#ex2("greedy_10", policy_builder_greedy(10))
+
+ex2("ucb1", policy_ucb1)
+
+ex2("optimistic_1", policy_builder_optimistic(1))
+ex2("optimistic_3", policy_builder_optimistic(3))
+ex2("optimistic_10", policy_builder_optimistic(10))
+
