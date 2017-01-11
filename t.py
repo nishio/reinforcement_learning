@@ -113,3 +113,47 @@ def run_ex2():
     ex2("optimistic_10", policy_builder_optimistic(10))
 
     ex2("ucb1_long", policy_ucb1, num_iteration=10000)
+
+
+def ex3(name, policy, num_iteration=NUM_ITERATION):
+    choices = np.zeros((NUM_SERIES, num_iteration))
+    rewards = np.zeros((NUM_SERIES, num_iteration))
+    for j in range(NUM_SERIES):
+        num_use = np.zeros(num_actions)
+        sum_reward = np.zeros(num_actions)
+        for i in range(num_iteration):
+            i_action = policy(num_use, sum_reward)
+            action = actions[i_action]
+            reward = action()
+            #print action.__name__, reward
+            num_use[i_action] += 1
+            sum_reward[i_action] += reward
+            choices[j, i] = i_action
+            rewards[j, i] = reward
+
+    return rewards.mean(axis=0)
+    # visualization
+    #import matplotlib.pyplot as plt
+    #plt.plot(rewards.sum(axis=0))
+    #plt.savefig('{}_reward.png'.format(name))
+
+
+r1 = ex3("greedy_3", policy_builder_greedy(3))
+r2 = ex3("optimistic_3", policy_builder_optimistic(3))
+r3 = ex3("ucb1", policy_ucb1)
+
+kernel = np.ones(30) / 30
+def smooth(x):
+    return np.convolve(x, kernel, mode='valid')
+
+import matplotlib.pyplot as plt
+plt.plot(smooth(r1), label = "greedy_3")
+plt.plot(smooth(r2), label = "optimistic_3")
+plt.plot(smooth(r3), label = "ucb1")
+
+plt.xlabel("iteration")
+plt.ylabel("reward")
+plt.legend(loc = 2)
+
+plt.savefig('rewards.png')
+
