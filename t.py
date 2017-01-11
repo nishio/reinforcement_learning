@@ -138,11 +138,11 @@ def ex3(name, policy, num_iteration=NUM_ITERATION):
     #plt.savefig('{}_reward.png'.format(name))
 
 
-r1 = ex3("greedy_3", policy_builder_greedy(3))
-r2 = ex3("optimistic_3", policy_builder_optimistic(3))
-r3 = ex3("ucb1", policy_ucb1)
+r1 = ex3("greedy_3", policy_builder_greedy(3), 20000)
+r2 = ex3("optimistic_3", policy_builder_optimistic(3), 20000)
+r3 = ex3("ucb1", policy_ucb1, 20000)
 
-kernel = np.ones(30) / 30
+kernel = np.ones(300) / 300
 def smooth(x):
     return np.convolve(x, kernel, mode='valid')
 
@@ -155,5 +155,5 @@ plt.xlabel("iteration")
 plt.ylabel("reward")
 plt.legend(loc = 2)
 
-plt.savefig('rewards.png')
+plt.savefig('rewards_20000_2.png')
 
