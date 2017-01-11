@@ -67,13 +67,13 @@ def ex1():
 
 NUM_SERIES = 600
 NUM_ITERATION = 1000
-def ex2(name, policy):
-    choices = np.zeros((NUM_SERIES, NUM_ITERATION))
-    rewards = np.zeros((NUM_SERIES, NUM_ITERATION))
+def ex2(name, policy, num_iteration=NUM_ITERATION):
+    choices = np.zeros((NUM_SERIES, num_iteration))
+    rewards = np.zeros((NUM_SERIES, num_iteration))
     for j in range(NUM_SERIES):
         num_use = np.zeros(num_actions)
         sum_reward = np.zeros(num_actions)
-        for i in range(NUM_ITERATION):
+        for i in range(num_iteration):
             i_action = policy(num_use, sum_reward)
             action = actions[i_action]
             reward = action()
@@ -94,16 +94,22 @@ def ex2(name, policy):
     # visualization
     import matplotlib.pyplot as plt
     choices.sort(axis=0)
-    plt.imshow(choices)
+    if num_iteration == 10000:
+        plt.imshow(choices[:, ::10])
+    else:
+        plt.imshow(choices)
     plt.savefig('{}.png'.format(name))
 
-#ex2("greedy_1", policy_builder_greedy(1))
-#ex2("greedy_3", policy_builder_greedy(3))
-#ex2("greedy_10", policy_builder_greedy(10))
 
-ex2("ucb1", policy_ucb1)
+def run_ex2():
+    ex2("greedy_1", policy_builder_greedy(1))
+    ex2("greedy_3", policy_builder_greedy(3))
+    ex2("greedy_10", policy_builder_greedy(10))
 
-ex2("optimistic_1", policy_builder_optimistic(1))
-ex2("optimistic_3", policy_builder_optimistic(3))
-ex2("optimistic_10", policy_builder_optimistic(10))
+    ex2("ucb1", policy_ucb1)
 
+    ex2("optimistic_1", policy_builder_optimistic(1))
+    ex2("optimistic_3", policy_builder_optimistic(3))
+    ex2("optimistic_10", policy_builder_optimistic(10))
+
+    ex2("ucb1_long", policy_ucb1, num_iteration=10000)
