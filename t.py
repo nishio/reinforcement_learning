@@ -169,4 +169,8 @@ def ex3_vis(p=100, N=1000):
 
     plt.savefig('rewards_{}_3.png'.format(N))
 
-ex3_vis(N=20000)
+#ex3_vis(N=20000)
+
+
+ex2("greedy_100", policy_builder_greedy(100))
+ex2("optimistic_100", policy_builder_optimistic(100))
