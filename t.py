@@ -138,22 +138,35 @@ def ex3(name, policy, num_iteration=NUM_ITERATION):
     #plt.savefig('{}_reward.png'.format(name))
 
 
-r1 = ex3("greedy_3", policy_builder_greedy(3), 20000)
-r2 = ex3("optimistic_3", policy_builder_optimistic(3), 20000)
-r3 = ex3("ucb1", policy_ucb1, 20000)
+def ex3_vis(p=100, N=1000):
+    r1 = ex3(
+        "greedy_{}".format(p),
+        policy_builder_greedy(p), N)
+    r2 = ex3(
+        "optimistic_{}".format(p),
+        policy_builder_optimistic(p), N)
+    r3 = ex3("ucb1", policy_ucb1, N)
 
-kernel = np.ones(300) / 300
-def smooth(x):
-    return np.convolve(x, kernel, mode='valid')
+    if N == 1000:
+        w = 30
+    elif N == 20000:
+        w = 300
+    else:
+        raise NotImplemented
 
-import matplotlib.pyplot as plt
-plt.plot(smooth(r1), label = "greedy_3")
-plt.plot(smooth(r2), label = "optimistic_3")
-plt.plot(smooth(r3), label = "ucb1")
+    kernel = np.ones(w) / w
+    def smooth(x):
+        return np.convolve(x, kernel, mode='valid')
 
-plt.xlabel("iteration")
-plt.ylabel("reward")
-plt.legend(loc = 2)
+    import matplotlib.pyplot as plt
+    plt.plot(smooth(r1), label = "greedy_{}".format(p))
+    plt.plot(smooth(r2), label = "optimistic_{}".format(p))
+    plt.plot(smooth(r3), label = "ucb1")
 
-plt.savefig('rewards_20000_2.png')
+    plt.xlabel("iteration")
+    plt.ylabel("reward")
+    plt.legend(loc = 4)
 
+    plt.savefig('rewards_{}_3.png'.format(N))
+
+ex3_vis(N=20000)
