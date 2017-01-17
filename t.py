@@ -157,10 +157,6 @@ def play(policy1, policy2=policy_random, to_print=False):
 
 #play(policy_random, to_print=True)
 
-from collections import Counter
-if 1:
-    print Counter(
-        play(policy_random) for i in range(10000))
 
 class Greedy(object):
     def __init__(self):
@@ -194,12 +190,17 @@ from kagura.utils import Digest
 digest = Digest(1)
 battle_per_seconds = []
 
-if 'ex2':
+if not'ex1':
+    from collections import Counter
+    print Counter(
+        play(policy_random) for i in range(10000))
+elif not'ex2':
     batch_width = 1000
     num_batch = 100
 elif 'ex3':
     batch_width = 1000
     num_batch = 1000
+
 
 def sarsa(alpha, resume=None):
     global environment, policy
