@@ -190,6 +190,9 @@ def int_to_action(i):
     return (i / 16, i % 16 + 1)
 
 
+from kagura.utils import Digest
+digest = Digest(1)
+battle_per_seconds = []
 
 
 def sarsa(alpha):
@@ -222,6 +225,9 @@ def sarsa(alpha):
         action = next_action
         if len(environment.result_log) == num_result:
             break
+        t = digest.digest(len(environment.result_log))
+        if t:
+            battle_per_seconds.append(t)
 
     vs = []
     for i in range(num_batch):
