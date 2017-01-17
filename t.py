@@ -171,6 +171,9 @@ def ex3_vis(p=100, N=1000):
 
 #ex3_vis(N=20000)
 
+if not"ex2-5":
+    ex2("greedy_100", policy_builder_greedy(100))
+    ex2("optimistic_100", policy_builder_optimistic(100))
 
-ex2("greedy_100", policy_builder_greedy(100))
-ex2("optimistic_100", policy_builder_optimistic(100))
+actions = [action_none, action_50, action_100, action_150]
+ex2("greedy_3_reorder", policy_builder_greedy(3))
