@@ -8,9 +8,9 @@ import numpy as np
 
 
 def board_to_int(board):
-    s = 0
+    s = 0L
     for i in range(16):
-        s += board[i] * (17 ** i)
+        s += long(board[i]) * (17 ** i)
     return s
 
 def board_to_possible_hands(board):
