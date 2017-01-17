@@ -255,20 +255,6 @@ plt.ylabel("Prob. of win")
 plt.legend(loc = 4)
 plt.savefig('sarsa.png')
 
-if not'ex4':
-    vs1 = sarsa(0.5)
-    vs2 = sarsa(0.05)
-    vs3 = sarsa(0.005)
-
-    import matplotlib.pyplot as plt
-    plt.plot([0.58] * len(vs1), label = "baseline")
-    plt.plot(vs1, label = "Sarsa(0.5)")
-    plt.plot(vs2, label = "Sarsa(0.05)")
-    plt.plot(vs3, label = "Sarsa(0.005)")
-    plt.xlabel("iteration")
-    plt.ylabel("Prob. of win")
-    plt.legend(loc = 4)
-    plt.savefig('sarsa.png')
 
 def f(n, m):
     if m == 1: return n + 1
