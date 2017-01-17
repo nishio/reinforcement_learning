@@ -126,46 +126,53 @@ class Greedy(object):
 def board_to_state(board):
     return board_to_int(board)
 
-alpha = 0.5
-gamma = 0.9
-batch_width = 100
-num_batch = 100
-num_result = batch_width * num_batch
-environment = Environment()
-policy = Greedy()
-action = policy(environment.board)
-state = board_to_state(environment.board)
-while True:
-    next_board, reward = environment(action)
-    #print_board(next_board)
-    next_state = board_to_state(next_board)
+def sarsa(alpha):
+    alpha = 0.5
+    gamma = 0.9
+    batch_width = 100
+    num_batch = 100
+    num_result = batch_width * num_batch
+    environment = Environment()
+    policy = Greedy()
+    action = policy(environment.board)
+    state = board_to_state(environment.board)
+    while True:
+        next_board, reward = environment(action)
+        #print_board(next_board)
+        next_state = board_to_state(next_board)
 
-    # determine a'
-    next_action = policy(next_board)
-    nextQ = policy.Qtable[next_state * 9 + next_action]
+        # determine a'
+        next_action = policy(next_board)
+        nextQ = policy.Qtable[next_state * 9 + next_action]
 
-    # update Q(s, a)
-    s_a = state * 9 + action
-    Qsa = policy.Qtable[s_a]
-    estimated_reward = reward + gamma * nextQ
-    diff = estimated_reward - Qsa
-    policy.Qtable[s_a] += alpha * diff
+        # update Q(s, a)
+        s_a = state * 9 + action
+        Qsa = policy.Qtable[s_a]
+        estimated_reward = reward + gamma * nextQ
+        diff = estimated_reward - Qsa
+        policy.Qtable[s_a] += alpha * diff
 
-    state = next_state
-    action = next_action
-    if len(environment.result_log) == num_result:
-        break
+        state = next_state
+        action = next_action
+        if len(environment.result_log) == num_result:
+            break
 
-vs = []
-for i in range(num_batch):
-    c = Counter(environment.result_log[batch_width * i : batch_width * (i + 1)])
-    print c
-    vs.append(float(c[1]) / batch_width)
+    vs = []
+    for i in range(num_batch):
+        c = Counter(environment.result_log[batch_width * i : batch_width * (i + 1)])
+        print c
+        vs.append(float(c[1]) / batch_width)
+    return vs
 
+vs1 = sarsa(0.5)
+vs2 = sarsa(0.05)
+vs3 = sarsa(0.005)
 
 import matplotlib.pyplot as plt
-plt.plot([0.58] * len(vs), label = "baseline")
-plt.plot(vs, label = "Sarsa")
+plt.plot([0.58] * len(vs1), label = "baseline")
+plt.plot(vs1, label = "Sarsa(0.5)")
+plt.plot(vs2, label = "Sarsa(0.05)")
+plt.plot(vs3, label = "Sarsa(0.005)")
 plt.xlabel("iteration")
 plt.ylabel("Prob. of win")
 plt.legend(loc = 4)
