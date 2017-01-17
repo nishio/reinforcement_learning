@@ -194,13 +194,17 @@ from kagura.utils import Digest
 digest = Digest(1)
 battle_per_seconds = []
 
+if 'ex2':
+    batch_width = 1000
+    num_batch = 100
+elif 'ex3':
+    batch_width = 1000
+    num_batch = 1000
 
 def sarsa(alpha, resume=None):
     global environment, policy
     alpha = 0.5
     gamma = 0.9
-    batch_width = 100
-    num_batch = 100
     num_result = batch_width * num_batch
     environment = Environment()
     policy = Greedy()
