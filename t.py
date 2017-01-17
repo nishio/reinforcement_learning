@@ -21,7 +21,7 @@ def init_board():
 
 def init_Q():
     from scipy.sparse import dok_matrix
-    return dok_matrix((17 ** 16, 16))
+    return dok_matrix((17 ** 16, 16 * 16))
 
 LINES = [
     [0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15],
@@ -168,16 +168,29 @@ class Greedy(object):
 
     def __call__(self, board):
         from random import choice
-        s = board_to_int(board)
-        #actions = board_to_possible_hands(board)
-        actions = range(9)
-        qa = [(self.Qtable[s * 9 + a], a) for a in actions]
+        s = board_to_int(env.board)
+        actions = (action_to_int((pos, piece))
+            for pos in board_to_possible_hands(env.board)
+            for piece in env.available_pieces
+        )
+        qa = [(self.Qtable[s, a], a) for a in actions]
         bestQ, bestA = max(qa)
         bextQ, bestA = choice([(q, a) for (q, a) in qa if q == bestQ])
-        return bestA
+        return int_to_action(bestA)
 
 def board_to_state(board):
     return board_to_int(board)
+
+def action_to_int(action):
+    pos, piece = action
+    return pos * 16 + (piece - 1)
+
+def int_to_action(i):
+    assert 0 <= i < 16 * 16
+    return (i / 16, i % 16 + 1)
+
+
+
 
 def sarsa(alpha):
     alpha = 0.5
@@ -195,11 +208,11 @@ def sarsa(alpha):
         next_state = board_to_state(next_board)
 
         # determine a'
-        next_action = policy(next_board)
-        nextQ = policy.Qtable[next_state * 9 + next_action]
+        next_action = policy(environment)
+        nextQ = policy.Qtable[next_state, action_to_int(next_action)]
 
         # update Q(s, a)
-        s_a = state * 9 + action
+        s_a = (state, action_to_int(action))
         Qsa = policy.Qtable[s_a]
         estimated_reward = reward + gamma * nextQ
         diff = estimated_reward - Qsa
