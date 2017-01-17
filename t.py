@@ -166,7 +166,7 @@ class Greedy(object):
     def __init__(self):
         self.Qtable = init_Q()
 
-    def __call__(self, board):
+    def __call__(self, env):
         from random import choice
         s = board_to_int(env.board)
         actions = (action_to_int((pos, piece))
