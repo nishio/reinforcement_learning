@@ -195,7 +195,8 @@ digest = Digest(1)
 battle_per_seconds = []
 
 
-def sarsa(alpha):
+def sarsa(alpha, resume=None):
+    global environment, policy
     alpha = 0.5
     gamma = 0.9
     batch_width = 100
@@ -203,7 +204,11 @@ def sarsa(alpha):
     num_result = batch_width * num_batch
     environment = Environment()
     policy = Greedy()
-    action = policy(environment.board)
+    if resume:
+        environment.result_log = resume['result_log']
+        policy.Qtable = resume['Qtable']
+
+    action = policy(environment)
     state = board_to_state(environment.board)
     while True:
         next_board, reward = environment(action)
