@@ -241,6 +241,16 @@ def sarsa(alpha, resume=None):
         vs.append(float(c[1]) / batch_width)
     return vs
 
+vs = sarsa(0.5)
+import matplotlib.pyplot as plt
+plt.clf()
+plt.plot([0.475] * len(vs), label = "baseline")
+plt.plot(vs, label = "Sarsa(0.5)")
+plt.xlabel("iteration")
+plt.ylabel("Prob. of win")
+plt.legend(loc = 4)
+plt.savefig('sarsa.png')
+
 if not'ex4':
     vs1 = sarsa(0.5)
     vs2 = sarsa(0.05)
