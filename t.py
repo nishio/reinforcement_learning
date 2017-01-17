@@ -56,8 +56,9 @@ class Environment(object):
     def __call__(self, action):
         if self.board[action] != 0:
             # illegal move
-            raise NotImplementerError
-            return
+            self.board = init_board()
+            self.result_log.append(2)
+            return (self.board, -1)
 
         self.board[action] = 1
         b = is_win(self.board)
@@ -115,7 +116,8 @@ class Greedy(object):
     def __call__(self, board):
         from random import choice
         s = board_to_int(board)
-        actions = board_to_possible_hands(board)
+        #actions = board_to_possible_hands(board)
+        actions = range(9)
         qa = [(self.Qtable[s * 9 + a], a) for a in actions]
         bestQ, bestA = max(qa)
         bextQ, bestA = choice([(q, a) for (q, a) in qa if q == bestQ])
