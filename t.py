@@ -74,11 +74,14 @@ def policy_random(env):
 
 class Environment(object):
     def __init__(self, policy=policy_random):
+        self.op_policy = policy
+        self.result_log =[]
+        self.init_env()
+
+    def init_env(self):
         self.board = init_board()
         self.available_pieces= range(2, 17)
         self.selected_piece = 1
-        self.op_policy = policy
-        self.result_log =[]
 
     def _update(self, action, k=1, to_print=False):
         position, piece = action
@@ -86,14 +89,14 @@ class Environment(object):
         if self.board[position] != 0:
             # illegal move
             print 'illegal pos'
-            self.board = init_board()
+            self.init_env()
             self.result_log.append(-1 * k)
             return (self.board, -1 * k)
 
         if piece not in self.available_pieces:
             # illegal move
             print 'illegal piece'
-            self.board = init_board()
+            self.init_env()
             self.result_log.append(-1 * k)
             return (self.board, -1 * k)
 
@@ -107,7 +110,7 @@ class Environment(object):
 
         b = is_win(self.board)
         if b:
-            self.board = init_board()
+            self.init_env()
             self.result_log.append(+1 * k)
             return (self.board, +1 * k)
 
@@ -119,7 +122,7 @@ class Environment(object):
                 print 'last move'
                 print_board(self.board)
 
-            self.board = init_board()
+            self.init_env()
             if b:
                 # opponent win
                 self.result_log.append(-1 * k)
