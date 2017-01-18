@@ -5,7 +5,7 @@ Quarto
 1-16: occupied
 """
 import numpy as np
-
+from collections import Counter
 
 def board_to_int(board):
     s = 0L
@@ -287,25 +287,32 @@ elif not'ex2':
     batch_width = 1000
     num_batch = 100
     vs = sarsa(0.5)
-elif 'ex3':
+elif not'ex3':
     batch_width = 1000
     num_batch = 1000
     vs = sarsa(0.5)
 
-
-
-batch_width = 1000
-num_batch = 100
-vs = qlearn(0.5)
+if 1:
+    batch_width = 1000
+    num_batch = 1000
+    vs = qlearn(0.5)
+    label = 'Qlearn(0.5)'
+    imgname = 'qlearn.png'
+elif 1:
+    batch_width = 1000
+    num_batch = 1000
+    vs = qlearn(0.05)
+    label = 'Qlearn(0.05)'
+    imgname = 'qlearn_0.05.png'
 
 import matplotlib.pyplot as plt
 plt.clf()
 plt.plot([0.475] * len(vs), label = "baseline")
-plt.plot(vs, label = "Sarsa(0.5)")
+plt.plot(vs, label=label)
 plt.xlabel("iteration")
 plt.ylabel("Prob. of win")
 plt.legend(loc = 4)
-plt.savefig('sarsa.png')
+plt.savefig(imgname)
 
 
 def f(n, m):
