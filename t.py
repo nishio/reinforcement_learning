@@ -174,6 +174,30 @@ class Greedy(object):
         bextQ, bestA = choice([(q, a) for (q, a) in qa if q == bestQ])
         return int_to_action(bestA)
 
+
+class EpsilonGreedy(object):
+    def __init__(self, eps=0.1):
+        self.Qtable = init_Q()
+        self.eps = eps
+
+    def __call__(self, env):
+        from random import choice, random
+        s = board_to_int(env.board)
+        if random() < self.eps:
+            pos = choice(board_to_possible_hands(env.board))
+            piece = choice(env.available_pieces)
+            return (pos, piece)
+
+        actions = (action_to_int((pos, piece))
+            for pos in board_to_possible_hands(env.board)
+            for piece in env.available_pieces
+        )
+        qa = [(self.Qtable[s, a], a) for a in actions]
+        bestQ, bestA = max(qa)
+        bextQ, bestA = choice([(q, a) for (q, a) in qa if q == bestQ])
+        return int_to_action(bestA)
+
+
 def board_to_state(board):
     return board_to_int(board)
 
@@ -190,13 +214,13 @@ from kagura.utils import Digest
 digest = Digest(1)
 battle_per_seconds = []
 
-def sarsa(alpha, resume=None):
+def sarsa(alpha, policyClass=Greedy, resume=None):
     global environment, policy
     alpha = 0.5
     gamma = 0.9
     num_result = batch_width * num_batch
     environment = Environment()
-    policy = Greedy()
+    policy = policyClass()
     if resume:
         environment.result_log = resume['result_log']
         policy.Qtable = resume['Qtable']
@@ -235,13 +259,13 @@ def sarsa(alpha, resume=None):
     return vs
 
 
-def qlearn(alpha, resume=None):
+def qlearn(alpha, policyClass=Greedy, resume=None):
     global environment, policy
     alpha = 0.5
     gamma = 0.9
     num_result = batch_width * num_batch
     environment = Environment()
-    policy = Greedy()
+    policy = policyClass()
     if resume:
         environment.result_log = resume['result_log']
         policy.Qtable = resume['Qtable']
@@ -251,8 +275,6 @@ def qlearn(alpha, resume=None):
         action = policy(environment)
         next_board, reward = environment(action)
         next_state = board_to_state(next_board)
-
-        #nextQ = policy.Qtable[next_state, action_to_int(next_action)]
 
         # update Q(s, a)
         maxQ = max(policy.Qtable[next_state, a] for a in board_to_possible_hands(next_board))
@@ -279,6 +301,38 @@ def qlearn(alpha, resume=None):
     return vs
 
 
+
+def plot_log():
+    from kagura import load
+    result_log = load("sarsa_0.05_result_log")
+    batch_width = 1000
+    num_batch = 1000
+    vs = []
+    for i in range(num_batch):
+        c = Counter(result_log[batch_width * i : batch_width * (i + 1)])
+        print c
+        vs.append(float(c[1]) / batch_width)
+
+    label = 'Sarsa(0.05)'
+    imgname = 'sarsa_0.05.png'
+    plot()
+
+def plot():
+    import matplotlib.pyplot as plt
+    plt.clf()
+    plt.plot([0.475] * len(vs), label = "baseline")
+    plt.plot(vs, label=label)
+    plt.xlabel("iteration")
+    plt.ylabel("Prob. of win")
+    plt.legend(loc = 4)
+    plt.savefig(imgname)
+
+
+def f(n, m):
+    if m == 1: return n + 1
+    return n * f(n - 1, m - 1) + f(n, m - 1)
+
+
 if not'ex1':
     from collections import Counter
     print Counter(
@@ -292,30 +346,34 @@ elif not'ex3':
     num_batch = 1000
     vs = sarsa(0.5)
 
-if 1:
+if 0:
     batch_width = 1000
     num_batch = 1000
     vs = qlearn(0.5)
     label = 'Qlearn(0.5)'
     imgname = 'qlearn.png'
-elif 1:
+elif 0:
     batch_width = 1000
     num_batch = 1000
     vs = qlearn(0.05)
     label = 'Qlearn(0.05)'
     imgname = 'qlearn_0.05.png'
 
-import matplotlib.pyplot as plt
-plt.clf()
-plt.plot([0.475] * len(vs), label = "baseline")
-plt.plot(vs, label=label)
-plt.xlabel("iteration")
-plt.ylabel("Prob. of win")
-plt.legend(loc = 4)
-plt.savefig(imgname)
 
+if 1:
+    batch_width = 1000
+    num_batch = 1000
+    vs = sarsa(0.5, policyClass=EpsilonGreedy)
+    label = 'Sarsa(0.5, eps=0.1)'
+    imgname = 'sarsa_0.5_eps0.1.png'
+    from kagura import dump
+    dump(environment.result_log, imgname.replace('.png', '_result_log'))
+elif 1:
+    batch_width = 1000
+    num_batch = 1000
+    vs = sarsa(0.05, policyClass=EpsilonGreedy)
+    label = 'Sarsa(0.05, eps=0.1)'
+    imgname = 'sarsa_0.05_eps0.1.png'
+    dump(environment.result_log, imgname.replace('.png', '_result_log'))
 
-def f(n, m):
-    if m == 1: return n + 1
-    return n * f(n - 1, m - 1) + f(n, m - 1)
-
+plot()
