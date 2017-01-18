@@ -190,18 +190,6 @@ from kagura.utils import Digest
 digest = Digest(1)
 battle_per_seconds = []
 
-if not'ex1':
-    from collections import Counter
-    print Counter(
-        play(policy_random) for i in range(10000))
-elif not'ex2':
-    batch_width = 1000
-    num_batch = 100
-elif 'ex3':
-    batch_width = 1000
-    num_batch = 1000
-
-
 def sarsa(alpha, resume=None):
     global environment, policy
     alpha = 0.5
@@ -246,7 +234,70 @@ def sarsa(alpha, resume=None):
         vs.append(float(c[1]) / batch_width)
     return vs
 
-vs = sarsa(0.5)
+
+def qlearn(alpha, resume=None):
+    global environment, policy
+    alpha = 0.5
+    gamma = 0.9
+    num_result = batch_width * num_batch
+    environment = Environment()
+    policy = Greedy()
+    if resume:
+        environment.result_log = resume['result_log']
+        policy.Qtable = resume['Qtable']
+
+    state = board_to_state(environment.board)
+    while True:
+        action = policy(environment)
+        next_board, reward = environment(action)
+        next_state = board_to_state(next_board)
+
+        #nextQ = policy.Qtable[next_state, action_to_int(next_action)]
+
+        # update Q(s, a)
+        maxQ = max(policy.Qtable[next_state, a] for a in board_to_possible_hands(next_board))
+        s_a = (state, action_to_int(action))
+
+        Qsa = policy.Qtable[s_a]
+        estimated_reward = reward + gamma * maxQ
+        diff = estimated_reward - Qsa
+        policy.Qtable[s_a] += alpha * diff
+
+        state = next_state
+
+        if len(environment.result_log) == num_result:
+            break
+        t = digest.digest(len(environment.result_log))
+        if t:
+            battle_per_seconds.append(t)
+
+    vs = []
+    for i in range(num_batch):
+        c = Counter(environment.result_log[batch_width * i : batch_width * (i + 1)])
+        print c
+        vs.append(float(c[1]) / batch_width)
+    return vs
+
+
+if not'ex1':
+    from collections import Counter
+    print Counter(
+        play(policy_random) for i in range(10000))
+elif not'ex2':
+    batch_width = 1000
+    num_batch = 100
+    vs = sarsa(0.5)
+elif 'ex3':
+    batch_width = 1000
+    num_batch = 1000
+    vs = sarsa(0.5)
+
+
+
+batch_width = 1000
+num_batch = 100
+vs = qlearn(0.5)
+
 import matplotlib.pyplot as plt
 plt.clf()
 plt.plot([0.475] * len(vs), label = "baseline")
