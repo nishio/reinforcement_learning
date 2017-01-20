@@ -58,19 +58,19 @@ class Environment(object):
             # illegal move
             self.board = init_board()
             self.result_log.append(2)
-            return (self.board, -1)
+            return (self, -1)
 
         self.board[action] = 1
         b = is_win(self.board)
         if b:
             self.board = init_board()
             self.result_log.append(1)
-            return (self.board, +1)
+            return (self, +1)
 
         if not board_to_possible_hands(self.board):
             self.board = init_board()
             self.result_log.append(0)
-            return (self.board, -1)
+            return (self, -1)
 
         op_action = self.op_policy(self.board)
         self.board[op_action] = 2
@@ -78,9 +78,9 @@ class Environment(object):
         if b:
             self.result_log.append(2)
             self.board = init_board()
-            return (self.board, -1)
+            return (self, -1)
 
-        return (self.board, 0)
+        return (self, 0)
 
 
 def play(policy1, policy2=policy_random, to_print=False):
@@ -113,12 +113,33 @@ class Greedy(object):
     def __init__(self):
         self.Qtable = init_Q()
 
-    def __call__(self, board):
+    def __call__(self, env):
         from random import choice
-        s = board_to_int(board)
-        #actions = board_to_possible_hands(board)
-        actions = range(9)
+        s = board_to_int(env.board)
+        actions = get_available_actions(env)
         qa = [(self.Qtable[s * 9 + a], a) for a in actions]
+        bestQ, bestA = max(qa)
+        bextQ, bestA = choice([(q, a) for (q, a) in qa if q == bestQ])
+        return bestA
+
+def get_available_actions(env):
+    return range(9)
+    # return board_to_possible_hands(board)
+
+class EpsilonGreedy(object):
+    def __init__(self, eps=0.1):
+        self.Qtable = init_Q()
+        self.eps = eps
+
+    def __call__(self, env):
+        from random import choice, random
+        s = board_to_int(env.board)
+        if random() < self.eps:
+            actions = get_available_actions(env)
+            return choice(actions)
+
+        actions = get_available_actions(env)
+        qa = [(self.Qtable[get_Qkey(s, a)], a) for a in actions]
         bestQ, bestA = max(qa)
         bextQ, bestA = choice([(q, a) for (q, a) in qa if q == bestQ])
         return bestA
@@ -134,15 +155,14 @@ def sarsa(alpha, policyClass=Greedy):
     num_result = batch_width * num_batch
     environment = Environment()
     policy = policyClass()
-    action = policy(environment.board)
+    action = policy(environment)
     state = board_to_state(environment.board)
     while True:
-        next_board, reward = environment(action)
-        #print_board(next_board)
-        next_state = board_to_state(next_board)
+        next_env, reward = environment(action)
+        next_state = board_to_state(next_env.board)
 
         # determine a'
-        next_action = policy(next_board)
+        next_action = policy(next_env)
         nextQ = policy.Qtable[next_state * 9 + next_action]
 
         # update Q(s, a)
@@ -177,13 +197,13 @@ def qlearn(alpha, policyClass=Greedy):
 
     state = board_to_state(environment.board)
     while True:
-        action = policy(environment.board)
-        next_board, reward = environment(action)
-        next_state = board_to_state(next_board)
+        action = policy(environment)
+        next_env, reward = environment(action)
+        next_state = board_to_state(next_env.board)
 
         # update Q(s, a)
         maxQ = max(policy.Qtable[get_Qkey(next_state, a)]
-                   for a in board_to_possible_hands(next_board))
+                   for a in get_available_actions(next_env))
         s_a = get_Qkey(state, action)
 
         Qsa = policy.Qtable[s_a]
@@ -230,3 +250,12 @@ if 0:
     plot(result, 'qlearn.png', baseline=0.58)
 
 
+batch_width = 1000
+num_batch = 1000
+result = [
+    (sarsa(0.05, EpsilonGreedy), "Sarsa(0.05, eps=0.1)"),
+    (qlearn(0.05, EpsilonGreedy), "Qlearn(0.05, eps=0.1)"),
+#    (sarsa(0.05), "Sarsa(0.05)"),
+#    (qlearn(0.05), "Qlearn(0.05)"),
+]
+plot(result, 'out.png', baseline=0.58)
