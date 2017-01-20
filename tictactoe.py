@@ -208,32 +208,25 @@ batch_width = 100
 num_batch = 100
 
 import matplotlib.pyplot as plt
-plt.clf()
+
+def plot(seq, name, baseline=None):
+    """seq: [(values, label)]"""
+    plt.clf()
+    if baseline != None:
+        plt.plot([0.58] * len(seq[0][0]), label = "baseline")
+    for (vs, label) in seq:
+        plt.plot(vs, label=label)
+    plt.xlabel("iteration")
+    plt.ylabel("Prob. of win")
+    plt.legend(loc = 4)
+    plt.savefig(name)
 
 if 0:
-    vs1 = sarsa(0.5)
-    vs2 = sarsa(0.05)
-    vs3 = sarsa(0.005)
-
-    plt.plot([0.58] * len(vs1), label = "baseline")
-    plt.plot(vs1, label = "Sarsa(0.5)")
-    plt.plot(vs2, label = "Sarsa(0.05)")
-    plt.plot(vs3, label = "Sarsa(0.005)")
-    plt.xlabel("iteration")
-    plt.ylabel("Prob. of win")
-    plt.legend(loc = 4)
-    plt.savefig('sarsa.png')
+    result = [
+        (qlearn(0.5), "Qlearn(0.5)"),
+        (qlearn(0.05), "Qlearn(0.05)"),
+        (qlearn(0.005), "Qlearn(0.005)")
+    ]
+    plot(result, 'qlearn.png', baseline=0.58)
 
 
-if 1:
-    vs1 = qlearn(0.5)
-    vs2 = qlearn(0.05)
-    vs3 = qlearn(0.005)
-    plt.plot([0.58] * len(vs1), label = "baseline")
-    plt.plot(vs1, label = "Qlearn(0.5)")
-    plt.plot(vs2, label = "Qlearn(0.05)")
-    plt.plot(vs3, label = "Qlearn(0.005)")
-    plt.xlabel("iteration")
-    plt.ylabel("Prob. of win")
-    plt.legend(loc = 4)
-    plt.savefig('qlearn.png')
