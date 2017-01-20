@@ -123,17 +123,17 @@ class Greedy(object):
         bextQ, bestA = choice([(q, a) for (q, a) in qa if q == bestQ])
         return bestA
 
+
 def board_to_state(board):
     return board_to_int(board)
 
-def sarsa(alpha):
-    alpha = 0.5
+
+def sarsa(alpha, policyClass=Greedy):
+    global environment, policy
     gamma = 0.9
-    batch_width = 100
-    num_batch = 100
     num_result = batch_width * num_batch
     environment = Environment()
-    policy = Greedy()
+    policy = policyClass()
     action = policy(environment.board)
     state = board_to_state(environment.board)
     while True:
@@ -164,16 +164,76 @@ def sarsa(alpha):
         vs.append(float(c[1]) / batch_width)
     return vs
 
-vs1 = sarsa(0.5)
-vs2 = sarsa(0.05)
-vs3 = sarsa(0.005)
+def get_Qkey(state, action):
+    return state * 9 + action
+    #return (state, action_to_int(action))
+
+def qlearn(alpha, policyClass=Greedy):
+    global environment, policy
+    gamma = 0.9
+    num_result = batch_width * num_batch
+    environment = Environment()
+    policy = policyClass()
+
+    state = board_to_state(environment.board)
+    while True:
+        action = policy(environment.board)
+        next_board, reward = environment(action)
+        next_state = board_to_state(next_board)
+
+        # update Q(s, a)
+        maxQ = max(policy.Qtable[get_Qkey(next_state, a)]
+                   for a in board_to_possible_hands(next_board))
+        s_a = get_Qkey(state, action)
+
+        Qsa = policy.Qtable[s_a]
+        estimated_reward = reward + gamma * maxQ
+        diff = estimated_reward - Qsa
+        policy.Qtable[s_a] += alpha * diff
+
+        state = next_state
+
+        if len(environment.result_log) == num_result:
+            break
+
+    vs = []
+    for i in range(num_batch):
+        c = Counter(environment.result_log[batch_width * i : batch_width * (i + 1)])
+        print c
+        vs.append(float(c[1]) / batch_width)
+    return vs
+
+
+batch_width = 100
+num_batch = 100
 
 import matplotlib.pyplot as plt
-plt.plot([0.58] * len(vs1), label = "baseline")
-plt.plot(vs1, label = "Sarsa(0.5)")
-plt.plot(vs2, label = "Sarsa(0.05)")
-plt.plot(vs3, label = "Sarsa(0.005)")
-plt.xlabel("iteration")
-plt.ylabel("Prob. of win")
-plt.legend(loc = 4)
-plt.savefig('sarsa.png')
+plt.clf()
+
+if 0:
+    vs1 = sarsa(0.5)
+    vs2 = sarsa(0.05)
+    vs3 = sarsa(0.005)
+
+    plt.plot([0.58] * len(vs1), label = "baseline")
+    plt.plot(vs1, label = "Sarsa(0.5)")
+    plt.plot(vs2, label = "Sarsa(0.05)")
+    plt.plot(vs3, label = "Sarsa(0.005)")
+    plt.xlabel("iteration")
+    plt.ylabel("Prob. of win")
+    plt.legend(loc = 4)
+    plt.savefig('sarsa.png')
+
+
+if 1:
+    vs1 = qlearn(0.5)
+    vs2 = qlearn(0.05)
+    vs3 = qlearn(0.005)
+    plt.plot([0.58] * len(vs1), label = "baseline")
+    plt.plot(vs1, label = "Qlearn(0.5)")
+    plt.plot(vs2, label = "Qlearn(0.05)")
+    plt.plot(vs3, label = "Qlearn(0.005)")
+    plt.xlabel("iteration")
+    plt.ylabel("Prob. of win")
+    plt.legend(loc = 4)
+    plt.savefig('qlearn.png')
