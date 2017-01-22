@@ -4,17 +4,27 @@ WORLD_WIDTH = 300
 WORLD_HEIGHT = 200
 START_X = 100.0
 START_Y = 100.0
-
+INITIAL_VELOCITY = 0.0  # 0.1
+INERTIA = 0.99
+VELOCITY_LIMIT = 0.1
+SIGMA = 0.1
+X_BONUS = 10.0
 class Environment(object):
     def __init__(self):
         self.result_log =[]
         self.init_state()
 
     def init_state(self):
-        self.state = np.array([
-            START_X, START_Y,
-            np.random.normal(0, 0.1), np.random.normal(0, 0.1),
-            1.0])
+        if INITIAL_VELOCITY:
+            self.state = np.array([
+                START_X, START_Y,
+                np.random.normal(0, INITIAL_VELOCITY),
+                np.random.normal(0, INITIAL_VELOCITY),
+                1.0])
+        else:
+            self.state = np.array([
+                START_X, START_Y, 0.0, 0.0, 1.0])
+
         self.time = 300
 
     def get_state(self):
@@ -24,7 +34,7 @@ class Environment(object):
         m = np.linalg.norm(action)
         if m > 1:
             action /= m
-        self.state[2:4] += action / 30
+        self.state[2:4] = self.state[2:4] * INERTIA + action * VELOCITY_LIMIT
         #m = np.linalg.norm(self.state[2:])
         #if m > 10:
         #    self.state[2:] /= (m / 10)
@@ -35,17 +45,17 @@ class Environment(object):
         if x < 0:
             self.init_state()
             self.result_log.append('left')
-            return -1.0
+            return -1.0 + X_BONUS * x / WORLD_WIDTH
 
         if y < 0:
             self.init_state()
             self.result_log.append('top')
-            return -1.0
+            return -1.0 + X_BONUS * x / WORLD_WIDTH
 
         if y > WORLD_HEIGHT:
             self.init_state()
             self.result_log.append('bottom')
-            return -1.0
+            return -1.0 + X_BONUS * x / WORLD_WIDTH
 
         if x > WORLD_WIDTH:
             self.init_state()
@@ -56,7 +66,7 @@ class Environment(object):
         if self.time == 0:
             self.init_state()
             self.result_log.append('timeout')
-            return -1.0
+            return -1.0 + X_BONUS * x / WORLD_WIDTH
 
         return 0.0
 
@@ -66,11 +76,11 @@ def policy_random(state):
 
 class Policy(object):
     def __init__(self):
-        self.theta = np.random.normal(scale=0.001, size=(5, 2))
+        self.theta = np.random.normal(scale=0.001, size=(5, 2)) * 0
 
     def __call__(self, state):
         mean = state.dot(self.theta)
-        a = np.random.normal(mean)
+        a = np.random.normal(mean, SIGMA)
         return a
 
     def grad(self, state, action):
