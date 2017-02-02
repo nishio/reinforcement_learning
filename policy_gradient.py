@@ -2,12 +2,12 @@ import numpy as np
 from collections import Counter
 WORLD_WIDTH = 300
 WORLD_HEIGHT = 200
-START_X = 100.0
+START_X = 50.0
 START_Y = 100.0
 INITIAL_VELOCITY = 0.0  # 0.1
-INERTIA = 0.99
-VELOCITY_LIMIT = 0.1
-SIGMA = 0.1
+INERTIA = 0.0  # 0.99
+VELOCITY_LIMIT = 1.0 # 0.1
+SIGMA = 1.0
 X_BONUS = 10.0
 class Environment(object):
     def __init__(self):
@@ -61,6 +61,11 @@ class Environment(object):
             self.init_state()
             self.result_log.append('goal')
             return 10.0
+
+        if 100 < x < 200 and 30 < y < 150:
+            self.init_state()
+            self.result_log.append('middle')
+            return -1.0 + X_BONUS * x / WORLD_WIDTH
 
         self.time -= 1
         if self.time == 0:
@@ -144,7 +149,7 @@ def reinforce(policy, num_plays=100, to_print=False):
     print policy.theta
     print 'grad'
     print grad
-    policy.theta += 0.01 * grad
+    policy.theta -= 0.01 * grad
     print baseline, sum_t
     return env, samples
 
@@ -152,7 +157,7 @@ def reinforce(policy, num_plays=100, to_print=False):
 #print Counter(play(policy_random).result_log)
 #print Counter(play(Policy()).result_log)
 policy = Policy()
-for i in range(100):
+for i in range(10000):
     env, samples = reinforce(policy, 100)
     print Counter(env.result_log)
 
@@ -160,10 +165,10 @@ for i in range(100):
     im = Image.new('RGB', (300, 200), color=(255,255,255))
     d = ImageDraw.Draw(im)
     for t, SARs in samples:
-        points = [(100, 100)]
+        points = [(START_X, START_Y)]
         for s, a, r in SARs:
             points.append(tuple(s[:2]))
         d.line(points, fill=0)
-    im.save('reinforce{:02d}.png'.format(i))
-
+    d.rectangle((100, 30, 200, 150), fill=(128, 128, 128))
+    im.save('reinforce{:04d}.png'.format(i))
 
