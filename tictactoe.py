@@ -160,6 +160,7 @@ class Environment(object):
     def get_info(self):
         return self.board.copy()
 
+
 def play(policy1, policy2=policy_random, to_print=False):
     env = Environment()
     result = 0
@@ -186,6 +187,7 @@ if not"ex1":
     print Counter(
         play(policy_random) for i in range(10000))
 
+
 class Greedy(object):
     def __init__(self, QClass=QRaw):
         self.Qtable = QClass()
@@ -198,9 +200,11 @@ class Greedy(object):
         bextQ, bestA = choice([(q, a) for (q, a) in qa if q == bestQ])
         return bestA
 
+
 def get_available_actions(env):
     return range(9)
     # return board_to_possible_hands(board)
+
 
 class EpsilonGreedy(object):
     def __init__(self, eps=0.1):
@@ -219,7 +223,6 @@ class EpsilonGreedy(object):
         bestQ, bestA = max(qa)
         bextQ, bestA = choice([(q, a) for (q, a) in qa if q == bestQ])
         return bestA
-
 
 
 def sarsa(alpha, policyClass=Greedy, extra_play=False):
