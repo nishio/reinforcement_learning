@@ -214,22 +214,17 @@ from kagura.utils import Digest
 digest = Digest(1)
 battle_per_seconds = []
 
-def sarsa(alpha, policyClass=Greedy, resume=None):
+def sarsa(alpha, policyClass=Greedy):
     global environment, policy
-    alpha = 0.5
     gamma = 0.9
     num_result = batch_width * num_batch
     environment = Environment()
     policy = policyClass()
-    if resume:
-        environment.result_log = resume['result_log']
-        policy.Qtable = resume['Qtable']
 
     action = policy(environment)
     state = board_to_state(environment.board)
     while True:
         next_board, reward = environment(action)
-        #print_board(next_board)
         next_state = board_to_state(next_board)
 
         # determine a'
@@ -259,16 +254,12 @@ def sarsa(alpha, policyClass=Greedy, resume=None):
     return vs
 
 
-def qlearn(alpha, policyClass=Greedy, resume=None):
+def qlearn(alpha, policyClass=Greedy):
     global environment, policy
-    alpha = 0.5
     gamma = 0.9
     num_result = batch_width * num_batch
     environment = Environment()
     policy = policyClass()
-    if resume:
-        environment.result_log = resume['result_log']
-        policy.Qtable = resume['Qtable']
 
     state = board_to_state(environment.board)
     while True:
@@ -360,15 +351,15 @@ elif 0:
     imgname = 'qlearn_0.05.png'
 
 
-if 1:
+from kagura import dump
+if 0:
     batch_width = 1000
     num_batch = 1000
     vs = sarsa(0.5, policyClass=EpsilonGreedy)
     label = 'Sarsa(0.5, eps=0.1)'
     imgname = 'sarsa_0.5_eps0.1.png'
-    from kagura import dump
     dump(environment.result_log, imgname.replace('.png', '_result_log'))
-elif 1:
+elif 0:
     batch_width = 1000
     num_batch = 1000
     vs = sarsa(0.05, policyClass=EpsilonGreedy)
@@ -376,4 +367,20 @@ elif 1:
     imgname = 'sarsa_0.05_eps0.1.png'
     dump(environment.result_log, imgname.replace('.png', '_result_log'))
 
+if 0:
+    batch_width = 100
+    num_batch = 1000
+    vs = sarsa(0.05, policyClass=Greedy)
+    label = 'Sarsa(0.05)'
+    imgname = 'sarsa_0.05_2.png'
+    dump(environment.result_log, imgname.replace('.png', '_result_log'))
+
+
+batch_width = 1000
+num_batch = 100
+vs = sarsa(0.5)
+label = 'Sarsa(0.5)'
+imgname = 'sarsa_0.5_2.png'
+
 plot()
+
